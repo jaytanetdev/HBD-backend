@@ -1,15 +1,20 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
-
+  // Get ConfigService
+  const configService = app.get(ConfigService);
+  
+  // CORS configuration from environment
+  const corsOrigin = configService.get<string>('CORS_ORIGIN');
   
   app.enableCors({
-    origin: true,
+    origin: corsOrigin === '*' ? true : corsOrigin?.split(',').map((o) => o.trim()) ?? true,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
